@@ -1,0 +1,25 @@
+CPU_CORE := rv32imfc_zicsr #ЗАГЛУШКА!!! ТУТ ТРЕБУЕТСЯ ПЕРЕДЕЛАТЬ!!!
+
+#CFLAGS += -march=rv32imfc_zicsr
+#CFLAGS += -march=ilp32f
+
+#CFLAGS += -D__UINT32_TYPE__=unsigned\ int
+
+FEATURES_PROVIDED += periph_clic
+FEATURES_PROVIDED += periph_gpio
+FEATURES_PROVIDED += periph_timer
+FEATURES_PROVIDED += periph_timer_periodic
+FEATURES_PROVIDED += periph_wdt
+FEATURES_PROVIDED += periph_pm
+FEATURES_PROVIDED += periph_flashpage
+FEATURES_PROVIDED += periph_flashpage_in_address_space
+FEATURES_PROVIDED += periph_flashpage_pagewise
+
+#include $(RIOTCPU)/k1921vg015_common_common/Makefile.features
+include $(RIOTCPU)/riscv_common/Makefile.features
+
+
+
+
+
+

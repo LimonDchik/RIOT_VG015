@@ -1,0 +1,4 @@
+#USEMODULE += boards_common_k1921vg015
+
+#include $(RIOTBOARD)/common/k1921vg015/Makefile.dep
+#include $(RIOTCPU)/riscv_common/Makefile.dep

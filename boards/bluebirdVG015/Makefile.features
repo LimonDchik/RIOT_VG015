@@ -1,0 +1,8 @@
+CPU = k1921vg015
+#CPU_MODEL = k1921vg015_ #ЗАГЛУШКА
+
+FEATURES_PROVIDED += periph_timer
+FEATURES_PROVIDED += periph_uart
+
+#include $(RIOTBOARD)/common/k1921vg015/Makefile.features
+#include $(RIOTCPU)/riscv_common/Makefile.features
