@@ -33,9 +33,8 @@ $ sudo cp -r --update=none /home/mageking/RIOT/boards/bluebirdVG015/toolchain/ri
 ## Заметки:
 1) Наилучшим образцом пока выступает GD32V. Он немного похож по архитектуре. И у него достаточно простая реализация библиотек.
 2) Проблема с MSG возникала из-за отсуствия этих строк в boards/bluebirdVG015/Makefile.features:
-    ```makefile
-    FEATURES_PROVIDED += periph_timer
-    FEATURES_PROVIDED += periph_uart
-    ```
-Да, пока ни таймера, ни UART нет. Но он в обязательном порядке хочет видеть эти строки.
+```makefile
+FEATURES_PROVIDED += periph_timer
+FEATURES_PROVIDED += periph_uart
+```
 3) Проверять результат компиляции удобно по файлам riotbuild.h.in и riotbuild.h в examples-miem/hello-world/bin/bluebirdVG015/riotbuild/
