@@ -506,8 +506,8 @@ void msg_queue_print(void)
     for (unsigned i = 0; i < msg_counter; i++) {
         msg_t *m = &msg_array[(first_msg + i) & msg_queue->mask];
         printf("    * %u: sender: %" PRIkernel_pid ", type: 0x%04" PRIu16
-               ", content: %" PRIu32 " (%p)\n", i, m->sender_pid, m->type,
-               m->content.value, m->content.ptr);
+               ", content: %lu (%p)\n", i, m->sender_pid, m->type,
+               (unsigned long)m->content.value, m->content.ptr);
     }
     irq_restore(state);
 }
