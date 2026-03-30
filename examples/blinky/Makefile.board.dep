@@ -1,3 +1,9 @@
 ifneq (,$(filter periph_timer,$(FEATURES_USED)))
   USEMODULE += ztimer_usec
 endif
+
+ifeq ($(BOARD),bluebirdVG015)
+  BLUEBIRD_LED_ACTIVE_LOW ?= 1
+  CFLAGS += -DBLUEBIRD_LED_ACTIVE_LOW=$(BLUEBIRD_LED_ACTIVE_LOW)
+  CFLAGS += -DK1921VG015_SKIP_STDIO_INIT
+endif
