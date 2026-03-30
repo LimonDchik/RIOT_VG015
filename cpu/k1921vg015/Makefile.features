@@ -5,7 +5,6 @@ CPU_CORE := rv32imfc_zicsr #ЗАГЛУШКА!!! ТУТ ТРЕБУЕТСЯ ПЕР
 
 #CFLAGS += -D__UINT32_TYPE__=unsigned\ int
 
-FEATURES_PROVIDED += periph_clic
 FEATURES_PROVIDED += periph_gpio
 FEATURES_PROVIDED += periph_timer
 FEATURES_PROVIDED += periph_timer_periodic

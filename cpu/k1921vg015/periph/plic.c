@@ -7,7 +7,7 @@
 */
 
 #include "csr.h"
-#include "plic.h"
+#include "k1921vg015_plic_hw.h"
 
 // pointers to handler functions for machine mode
 irqfunc* mach_plic_handler[32] __attribute__((section(".data")));

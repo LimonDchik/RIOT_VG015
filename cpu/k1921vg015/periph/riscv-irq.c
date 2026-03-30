@@ -1,4 +1,4 @@
-#include "plic.h"
+#include "k1921vg015_plic_hw.h"
 #include "riscv-irq.h"
 #include "riscv-csr.h"
 #include <stdint.h>
