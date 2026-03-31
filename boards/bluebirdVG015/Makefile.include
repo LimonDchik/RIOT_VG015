@@ -1,7 +1,7 @@
 #PROGRAMMER ?= toolchain/openocd-rus-mcu-win/bin/openocd
 # FLASHDEPS = toolchain/openocd-rus-mcu-win/bin/openocd -f ./interface/blueprog.cfg ./target/k1921vg015.cfg -c 'program build/vgo15-fw.bin reset exit 0x80000000 verify'
 
-FLASHER ?= $(BOARDDIR)/toolchain/openocd-rus-mcu-win/bin/openocd.exe
+#FLASHER ?= $(BOARDDIR)/toolchain/openocd-rus-mcu-win/bin/openocd.exe #под убунту
 
 FFLAGS = -f $(BOARDDIR)/blueprog.cfg -f $(BOARDDIR)/k1921vg015.cfg -c 'program $(BINDIR)/vgo15-fw.bin reset exit 0x80000000 verify'
 #FFLAGS = -f "D:/VUZD/ApparatnoeObespechenieIOT/RIOT/boards/bluebirdVG015/blueprog.cfg" \
@@ -10,13 +10,31 @@ FFLAGS = -f $(BOARDDIR)/blueprog.cfg -f $(BOARDDIR)/k1921vg015.cfg -c 'program $
 
 FLASHFILE ?= $(BINFILE)
 
-# Определяем адреса памяти для K1921VG015 #ИСПРАВИТЬ!!!!
-ROM_START_ADDR ?= 0x80000000
-ROM_LEN ?= 1024K  # или сколько флеша у твоего чипа
-RAM_START_ADDR ?= 0x20000000
-RAM_LEN ?= 128K   # или сколько RAM
+# Ship newlib headers from the local toolchain if host gcc has none
+_BLUEBIRD_TC := $(abspath $(BOARDDIR)/toolchain/riscv-gcc)
+_BLUEBIRD_NEWLIB_INC := $(_BLUEBIRD_TC)/riscv64-unknown-elf/include
+ifneq (,$(wildcard $(_BLUEBIRD_NEWLIB_INC)/reent.h))
+  INCLUDES += -isystem $(_BLUEBIRD_NEWLIB_INC)
+endif
+_BLUEBIRD_MULTILIB := $(_BLUEBIRD_TC)/riscv64-unknown-elf/lib/rv32imac/ilp32
+ifneq (,$(wildcard $(_BLUEBIRD_MULTILIB)/libc.a))
+  LINKFLAGS += -L$(_BLUEBIRD_MULTILIB)
+endif
 
+# Определяем адреса памяти для K1921VG015
+ROM_START_ADDR ?= 0x80000000
+ROM_LEN ?= 1024K
+RAM_START_ADDR ?= 0x40000000
+RAM_LEN ?= 256K
 
 # Подключаем общий код для RISC-V
 #include $(RIOTCPU)/riscv_common/Makefile.include
 #include $(RIOTBOARD)/common/k1921vg015/Makefile.include
+
+PROGRAMMER      ?= openocd
+PROGRAMMERS_SUPPORTED += openocd
+
+FLASHER         ?= openocd
+FFLAGS          = -f $(BOARDDIR)/blueprog.cfg \
+                  -f $(BOARDDIR)/k1921vg015.cfg \
+                  -c 'program $(ELFFILE) verify reset exit'

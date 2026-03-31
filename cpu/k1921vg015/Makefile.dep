@@ -1,25 +1,11 @@
 USEMODULE += periph
 
-FEATURES_REQUIRED += periph_clic
-
 ifneq (,$(filter periph_pm,$(USEMODULE)))
   FEATURES_REQUIRED += periph_wdt
 endif
 
-#USEMODULE += core_msg
-#USEMODULE += core_msg_bus
-#include $(RIOTCPU)/k1921vg015_common/Makefile.dep
+ifneq (,$(filter periph_timer,$(USEMODULE)))
+  FEATURES_REQUIRED += periph_coretimer
+endif
+
 include $(RIOTCPU)/riscv_common/Makefile.dep
-
-
-#USEMODULE += periph
-
-#FEATURES_REQUIRED += periph_clic
-
-#ifneq (,$(filter periph_pm,$(USEMODULE)))
-#  FEATURES_REQUIRED += periph_wdt
-#endif
-
-#include $(RIOTCPU)/riscv_common/Makefile.dep
-
-

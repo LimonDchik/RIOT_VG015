@@ -29,7 +29,7 @@ extern "C" {
 #include <stdint.h>
 #include "csr.h"
 #include "arch.h"
-#include "plic.h"
+#include "k1921vg015_plic_hw.h"
 
 //-- Defines -------------------------------------------------------------------
 #ifndef HSECLK_VAL

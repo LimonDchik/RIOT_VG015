@@ -136,7 +136,7 @@ static void handle_trap(uint32_t mcause)
         default:
 #ifdef DEVELHELP
             printf("Unhandled trap:\n");
-            printf("  mcause: 0x%" PRIx32 "\n", trap);
+            printf("  mcause: 0x%lx\n", (unsigned long)trap);
             printf("  mepc:   0x%lx\n", read_csr(mepc));
             printf("  mtval:  0x%lx\n", read_csr(mtval));
 #endif

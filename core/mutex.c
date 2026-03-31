@@ -56,7 +56,7 @@ static inline __attribute__((always_inline)) void _block(mutex_t *mutex,
      * it's subtly not allowed, eg. board_init */
     assert(me != NULL);
     DEBUG("PID[%" PRIkernel_pid "] mutex_lock() Adding node to mutex queue: "
-          "prio: %" PRIu32 "\n", thread_getpid(), (uint32_t)me->priority);
+          "prio: %lu\n", thread_getpid(), (unsigned long)me->priority);
     sched_set_status(me, STATUS_MUTEX_BLOCKED);
     if (mutex->queue.next == MUTEX_LOCKED) {
         mutex->queue.next = (list_node_t *)&me->rq_entry;
