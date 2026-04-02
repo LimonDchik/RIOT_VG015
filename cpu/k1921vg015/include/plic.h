@@ -65,4 +65,8 @@ void PLIC_SetThreshold(uint8_t target, uint32_t value);
 void SetIrqHandler(Plic_IsrVect_TypeDef IsrVector, irqfunc* IRQHandler,uint8_t Priority);
 void trap_handler (void);
 
+/* RIOT PLIC interface */
+void plic_init(void);
+void plic_isr_handler(void);
+
 #endif
