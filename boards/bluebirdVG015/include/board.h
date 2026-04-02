@@ -1,40 +1,29 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include "periph_cpu.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @name    STDIO UART
- * @{
- */
-#define STDIO_UART_DEV      UART_DEV(0)
-#define STDIO_UART_BAUDRATE (115200U)
+#include "K1921VG015.h"
 
-#ifndef BLUEBIRD_LED_GPIO
-#define BLUEBIRD_LED_GPIO   GPIOC
-#endif
+/* LED on HL1 (GPIO_B10) */
+#define BLUEBIRD_LED_GPIO      GPIOB
+#define BLUEBIRD_LED_PIN_NUM   10
+#define BLUEBIRD_LED_ACTIVE_LOW 1
 
-#ifndef BLUEBIRD_LED_PIN_NUM
-#define BLUEBIRD_LED_PIN_NUM    (0U)
-#endif
-
-#ifndef BLUEBIRD_LED_ACTIVE_LOW
-#define BLUEBIRD_LED_ACTIVE_LOW   1
-#endif
-
-#if BLUEBIRD_LED_ACTIVE_LOW
-#define LED0_ON   do { (BLUEBIRD_LED_GPIO)->DATAOUT &= ~(1U << (BLUEBIRD_LED_PIN_NUM)); } while (0)
-#define LED0_OFF  do { (BLUEBIRD_LED_GPIO)->DATAOUT |= (1U << (BLUEBIRD_LED_PIN_NUM)); } while (0)
+#define LED0_PIN    (1U << BLUEBIRD_LED_PIN_NUM)
+#ifdef BLUEBIRD_LED_ACTIVE_LOW
+#define LED0_ON     (BLUEBIRD_LED_GPIO->DATAOUTCLR = LED0_PIN)
+#define LED0_OFF    (BLUEBIRD_LED_GPIO->DATAOUTSET = LED0_PIN)
+#define LED0_TOGGLE (BLUEBIRD_LED_GPIO->DATAOUTTGL = LED0_PIN)
 #else
-#define LED0_ON   do { (BLUEBIRD_LED_GPIO)->DATAOUT |= (1U << (BLUEBIRD_LED_PIN_NUM)); } while (0)
-#define LED0_OFF  do { (BLUEBIRD_LED_GPIO)->DATAOUT &= ~(1U << (BLUEBIRD_LED_PIN_NUM)); } while (0)
+#define LED0_ON     (BLUEBIRD_LED_GPIO->DATAOUTSET = LED0_PIN)
+#define LED0_OFF    (BLUEBIRD_LED_GPIO->DATAOUTCLR = LED0_PIN)
+#define LED0_TOGGLE (BLUEBIRD_LED_GPIO->DATAOUTTGL = LED0_PIN)
 #endif
-#define LED0_TOGGLE  ((void)((BLUEBIRD_LED_GPIO)->DATAOUTTGL = (1U << (BLUEBIRD_LED_PIN_NUM))))
-/** @} */
+
+void board_init(void);
 
 #ifdef __cplusplus
 }
