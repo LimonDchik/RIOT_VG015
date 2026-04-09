@@ -11,7 +11,7 @@
 #define swap_csr(reg, val)                      \
 ({                                              \
     unsigned long __tmp = (unsigned long)(val); \
-    asm volatile ("csrrw %0," _TOSTR(reg) ",%1" \
+    __asm__ volatile ("csrrw %0," _TOSTR(reg) ",%1" \
                   : "=r" (__tmp) : "rK" (__tmp) \
                   : "memory");                  \
     __tmp;                                      \
@@ -20,7 +20,7 @@
 #define read_csr(reg)                           \
 ({                                              \
     unsigned long __tmp;                        \
-    asm volatile ("csrr %0," _TOSTR(reg)        \
+    __asm__ volatile ("csrr %0," _TOSTR(reg)        \
                   : "=r" (__tmp) :              \
                   : "memory");                  \
     __tmp;                                      \
@@ -29,7 +29,7 @@
 #define write_csr(reg, val)                     \
 ({                                              \
     unsigned long __tmp = (unsigned long)(val); \
-    asm volatile ("csrw " _TOSTR(reg) ",%0"     \
+    __asm__ volatile ("csrw " _TOSTR(reg) ",%0"     \
                   : : "rK" (__tmp)              \
                   : "memory");                  \
 })
@@ -37,7 +37,7 @@
 #define set_csr(reg, val)                       \
 ({                                              \
     unsigned long __tmp = (unsigned long)(val); \
-    asm volatile ("csrrs %0," _TOSTR(reg) ",%1" \
+    __asm__ volatile ("csrrs %0," _TOSTR(reg) ",%1" \
                   : "=r" (__tmp) : "rK" (__tmp) \
                   : "memory");                  \
     __tmp;                                      \
@@ -46,7 +46,7 @@
 #define clear_csr(reg, val)                     \
 ({                                              \
     unsigned long __tmp = (unsigned long)(val); \
-    asm volatile ("csrrc %0," _TOSTR(reg) ",%1" \
+    __asm__ volatile ("csrrc %0," _TOSTR(reg) ",%1" \
                   : "=r" (__tmp) : "rK" (__tmp) \
                   : "memory");                  \
     __tmp;                                      \
