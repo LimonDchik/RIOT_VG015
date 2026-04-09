@@ -14,7 +14,7 @@ extern "C" {
 /** @} */
 
 static const uart_conf_t uart_config[] = {
-    { .dev = UART0 },
+    { .dev = UART3 },
 };
 
 #define UART_NUMOF (sizeof(uart_config) / sizeof(uart_config[0]))

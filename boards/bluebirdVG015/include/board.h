@@ -7,7 +7,15 @@ extern "C" {
 
 #include "K1921VG015.h"
 
-/* LED on HL1 (GPIO_B10) */
+/**
+ * @name    STDIO UART
+ * @{
+ */
+#define STDIO_UART_DEV      UART_DEV(0)
+#define STDIO_UART_BAUDRATE (115200U)
+/** @} */
+
+/* LED on HL1 (GPIO_C0) for this BlueBird-VG015 board revision */
 #define BLUEBIRD_LED_GPIO      GPIOC
 #define BLUEBIRD_LED_PIN_NUM   0
 #define BLUEBIRD_LED_ACTIVE_LOW 1
