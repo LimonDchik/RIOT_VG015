@@ -71,7 +71,8 @@ void plic_enable_interrupt(unsigned irq)
 {
     volatile uint32_t *irq_reg = _get_irq_reg(irq);
 
-    __atomic_fetch_or(irq_reg, 1 << (irq & 0x1f), __ATOMIC_RELAXED);
+    //__atomic_fetch_or(irq_reg, 1 << (irq & 0x1f), __ATOMIC_RELAXED);
+    *irq_reg |= (1 << (irq & 0x1f));
 }
 
 void plic_disable_interrupt(unsigned irq)

@@ -8,8 +8,8 @@ extern "C" {
 #include "K1921VG015.h"
 
 /* LED on HL1 (GPIO_B10) */
-#define BLUEBIRD_LED_GPIO      GPIOB
-#define BLUEBIRD_LED_PIN_NUM   10
+#define BLUEBIRD_LED_GPIO      GPIOC
+#define BLUEBIRD_LED_PIN_NUM   0
 #define BLUEBIRD_LED_ACTIVE_LOW 1
 
 #define LED0_PIN    (1U << BLUEBIRD_LED_PIN_NUM)

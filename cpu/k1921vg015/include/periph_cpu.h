@@ -22,8 +22,19 @@ typedef struct {
  */
 #define PERIPH_TIMER_PROVIDES_SET
 
+/**
+ * @brief   Timer configuration
+ */
+typedef struct {
+    TMR_TypeDef *dev;        /**< timer device */
+    uint32_t max;           /**< maximum value to count to (16/32 bit) */
+    uint8_t irqn;           /**< global IRQ channel */
+} timer_conf_t;
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* PERIPH_CPU_H */
+
+

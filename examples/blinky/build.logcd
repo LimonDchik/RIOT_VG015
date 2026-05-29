@@ -1,0 +1,24 @@
+Building application "blinky" for "bluebirdVG015" with MCU "k1921vg015".
+
+"make" -C /home/mageking/RIOT/boards/bluebirdVG015
+"make" -C /home/mageking/RIOT/boards/common/init
+"make" -C /home/mageking/RIOT/core
+"make" -C /home/mageking/RIOT/core/lib
+"make" -C /home/mageking/RIOT/cpu/k1921vg015
+"make" -C /home/mageking/RIOT/cpu/k1921vg015/periph
+"make" -C /home/mageking/RIOT/cpu/riscv_common
+[01m[K/home/mageking/RIOT/cpu/riscv_common/irq_arch.c:[m[K In function '[01m[Kriscv_irq_init[m[K':
+[01m[K/home/mageking/RIOT/cpu/riscv_common/irq_arch.c:67:9:[m[K [01;31m[Kerror: [m[Kimplicit declaration of function '[01m[Kplic_init[m[K'; did you mean '[01m[Kclic_init[m[K'? [[01;31m[K-Werror=implicit-function-declaration[m[K]
+   67 |         [01;31m[Kplic_init[m[K();
+      |         [01;31m[K^~~~~~~~~[m[K
+      |         [32m[Kclic_init[m[K
+[01m[K/home/mageking/RIOT/cpu/riscv_common/irq_arch.c:[m[K In function '[01m[Khandle_trap[m[K':
+[01m[K/home/mageking/RIOT/cpu/riscv_common/irq_arch.c:108:17:[m[K [01;31m[Kerror: [m[Kimplicit declaration of function '[01m[Kplic_isr_handler[m[K'; did you mean '[01m[Kclic_isr_handler[m[K'? [[01;31m[K-Werror=implicit-function-declaration[m[K]
+  108 |                 [01;31m[Kplic_isr_handler[m[K();
+      |                 [01;31m[K^~~~~~~~~~~~~~~~[m[K
+      |                 [32m[Kclic_isr_handler[m[K
+cc1: all warnings being treated as errors
+make[3]: *** [/home/mageking/RIOT/Makefile.base:146: /home/mageking/RIOT/examples/blinky/bin/bluebirdVG015/riscv_common/irq_arch.o] Error 1
+make[2]: *** [/home/mageking/RIOT/Makefile.base:31: ALL--/home/mageking/RIOT/cpu/riscv_common] Error 2
+make[1]: *** [/home/mageking/RIOT/Makefile.base:31: ALL--/home/mageking/RIOT/cpu/k1921vg015] Error 2
+make: *** [/home/mageking/RIOT/examples/blinky/../../Makefile.include:749: application_blinky.module] Error 2

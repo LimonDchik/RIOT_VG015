@@ -19,8 +19,24 @@ static const uart_conf_t uart_config[] = {
 
 #define UART_NUMOF (sizeof(uart_config) / sizeof(uart_config[0]))
 
+/**
+ * @name   Timer configuration
+ * @{
+ */
+static const timer_conf_t timer_config[] = {
+    {
+        .dev      = TMR1,
+        .max      = 0x0000ffff,
+        .irqn     = IsrVect_IRQ_TMR1
+    }
+};
+
+#define TMR1_IRQN        1
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* PERIPH_CONF_H */
+
+
