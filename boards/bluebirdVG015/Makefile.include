@@ -1,8 +1,8 @@
 #PROGRAMMER ?= toolchain/openocd-rus-mcu-win/bin/openocd
 # FLASHDEPS = toolchain/openocd-rus-mcu-win/bin/openocd -f ./interface/blueprog.cfg ./target/k1921vg015.cfg -c 'program build/vgo15-fw.bin reset exit 0x80000000 verify'
 
-FLASHER ?= $(BOARDDIR)/toolchain/openocd-rus-mcu-win/bin/openocd.exe #под убунту #Туточка
-PROGRAMMER ?= $(BOARDDIR)/toolchain/openocd-rus-mcu-win/bin/openocd.exe #под убунту #Туточка
+FLASHER ?= openocd
+PROGRAMMER ?= openocd
 
 
 FFLAGS = -f $(BOARDDIR)/blueprog.cfg -f $(BOARDDIR)/k1921vg015.cfg -c 'program $(BINDIR)/vgo15-fw.bin reset exit 0x80000000 verify'
