@@ -6,8 +6,8 @@
 
 void plic_init(void)
 {
-    /* Initialize PLIC for RIOT - set threshold high to disable all interrupts initially */
-    PLIC_SetThreshold(Plic_Mach_Target, 15);
+    /* Allow all configured external interrupts by default. */
+    PLIC_SetThreshold(Plic_Mach_Target, 0);
 }
 
 void plic_isr_handler(void)
