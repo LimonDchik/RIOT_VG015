@@ -14,11 +14,13 @@ bin
 *.bin
 # Build directory
 /build
+*.logcd
 # AFL findings
 fuzzing/**/findings/
 # Backup files
 *~
 *.orig
+*:Zone.Identifier
 .*.swn
 .*.swo
 .*.swp
