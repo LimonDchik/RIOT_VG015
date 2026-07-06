@@ -86,8 +86,8 @@ static void _uart_isr(uart_t dev)
 {
     UART_TypeDef *uart = uart_config[dev].dev;
 
-    while (!uart->FR_bit.RXFE) {
-        _rx_cb[dev](_rx_arg[dev], (uint8_t)uart->DR_bit.DATA);
+    while ((uart->FR & UART_FR_RXFE_Msk) == 0U) {
+        _rx_cb[dev](_rx_arg[dev], (uint8_t)(uart->DR & UART_DR_DATA_Msk));
     }
 
     uart->ICR = UART_ICR_RXIC_Msk | UART_ICR_RTIC_Msk |
@@ -149,8 +149,9 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
     _rx_arg[dev] = arg;
 
     if (rx_cb != NULL) {
+        /* Match the vendor example: arm RX IRQ and RX timeout IRQ together. */
         uart_config[dev].dev->ICR = 0x7ffU;
-        uart_config[dev].dev->IMSC = UART_IMSC_RXIM_Msk;
+        uart_config[dev].dev->IMSC = UART_IMSC_RXIM_Msk | UART_IMSC_RTIM_Msk;
         SetIrqHandler(_uart_vector_num(uart_config[dev].dev), _uart0_isr, 1);
     }
     else {
@@ -167,7 +168,7 @@ void uart_write(uart_t dev, const uint8_t *data, size_t len)
 
     for (size_t i = 0; i < len; i++) {
         uint32_t spin = 0;
-        while (uart->FR_bit.TXFF) {
+        while (uart->FR & UART_FR_TXFF_Msk) {
             /* Avoid hard-lock if UART TX FIFO status never clears. */
             if (++spin > 1000000u) {
                 break;
