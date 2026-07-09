@@ -18,7 +18,12 @@ typedef struct {
 } uart_conf_t;
 
 /**
- * @brief   `coretimer.c` implements `timer_set`; skip the wrapper in `periph_common`.
+ * @brief   K1921VG015 timers provide 4 capture/compare channels
+ */
+#define TIMER_CHANNEL_NUMOF (4U)
+
+/**
+ * @brief   The driver provides a relative set function
  */
 #define PERIPH_TIMER_PROVIDES_SET
 
@@ -26,7 +31,7 @@ typedef struct {
  * @brief   Timer configuration
  */
 typedef struct {
-    TMR_TypeDef *dev;        /**< timer device */
+    TMR32_TypeDef *dev;     /**< timer device */
     uint32_t max;           /**< maximum value to count to (16/32 bit) */
     uint8_t irqn;           /**< global IRQ channel */
 } timer_conf_t;
@@ -36,5 +41,4 @@ typedef struct {
 #endif
 
 #endif /* PERIPH_CPU_H */
-
 
