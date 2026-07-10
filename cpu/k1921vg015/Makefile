@@ -3,6 +3,6 @@ MODULE = cpu
 
 CFLAGS += -DMODULE_PERIPH_PLIC=1
 
-DIRS += periph $(RIOTCPU)/riscv_common #$(RIOTCPU)/k1921vg015_common
+DIRS += $(RIOTCPU)/riscv_common periph vendor #$(RIOTCPU)/k1921vg015_common
 
 include $(RIOTBASE)/Makefile.base

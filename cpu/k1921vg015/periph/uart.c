@@ -29,19 +29,19 @@ static void *_rx_arg[UART_NUMOF];
 static unsigned _uart_vector_num(UART_TypeDef *uart)
 {
     if (uart == UART0) {
-        return PLIC_UART0_VECTNUM;
+        return IsrVect_IRQ_UART0;
     }
     if (uart == UART1) {
-        return PLIC_UART1_VECTNUM;
+        return IsrVect_IRQ_UART1;
     }
     if (uart == UART2) {
-        return PLIC_UART2_VECTNUM;
+        return IsrVect_IRQ_UART2;
     }
     if (uart == UART3) {
-        return PLIC_UART3_VECTNUM;
+        return IsrVect_IRQ_UART3;
     }
     if (uart == UART4) {
-        return PLIC_UART4_VECTNUM;
+        return IsrVect_IRQ_UART4;
     }
 
     return 0;
@@ -95,7 +95,11 @@ static void _uart_isr(uart_t dev)
                 UART_ICR_BEIC_Msk | UART_ICR_OEIC_Msk;
 }
 
-static void _uart0_isr(void) { _uart_isr(0); }
+static void _uart0_isr(int irq)
+{
+    (void)irq;
+    _uart_isr(0);
+}
 
 static uint32_t _uart_clk(UART_TypeDef *uart)
 {
@@ -152,11 +156,13 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
         /* Match the vendor example: arm RX IRQ and RX timeout IRQ together. */
         uart_config[dev].dev->ICR = 0x7ffU;
         uart_config[dev].dev->IMSC = UART_IMSC_RXIM_Msk | UART_IMSC_RTIM_Msk;
-        SetIrqHandler(_uart_vector_num(uart_config[dev].dev), _uart0_isr, 1);
+        plic_set_isr_cb(_uart_vector_num(uart_config[dev].dev), _uart0_isr);
+        plic_set_priority(_uart_vector_num(uart_config[dev].dev), 1);
+        plic_enable_interrupt(_uart_vector_num(uart_config[dev].dev));
     }
     else {
         uart_config[dev].dev->IMSC = 0;
-        PLIC_IntDisable(Plic_Mach_Target, _uart_vector_num(uart_config[dev].dev));
+        plic_disable_interrupt(_uart_vector_num(uart_config[dev].dev));
     }
 
     return 0;

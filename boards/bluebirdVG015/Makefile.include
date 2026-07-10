@@ -1,7 +1,9 @@
 #PROGRAMMER ?= toolchain/openocd-rus-mcu-win/bin/openocd
 # FLASHDEPS = toolchain/openocd-rus-mcu-win/bin/openocd -f ./interface/blueprog.cfg ./target/k1921vg015.cfg -c 'program build/vgo15-fw.bin reset exit 0x80000000 verify'
 
-#FLASHER ?= $(BOARDDIR)/toolchain/openocd-rus-mcu-win/bin/openocd.exe #под убунту
+FLASHER ?= openocd
+PROGRAMMER ?= openocd
+
 
 FFLAGS = -f $(BOARDDIR)/blueprog.cfg -f $(BOARDDIR)/k1921vg015.cfg -c 'program $(BINDIR)/vgo15-fw.bin reset exit 0x80000000 verify'
 #FFLAGS = -f "D:/VUZD/ApparatnoeObespechenieIOT/RIOT/boards/bluebirdVG015/blueprog.cfg" \
@@ -30,11 +32,11 @@ RAM_LEN ?= 256K
 # Подключаем общий код для RISC-V
 #include $(RIOTCPU)/riscv_common/Makefile.include
 #include $(RIOTBOARD)/common/k1921vg015/Makefile.include
+ 
+#PROGRAMMER      ?= openocd #Туточка
+#PROGRAMMERS_SUPPORTED += openocd #Туточка
 
-PROGRAMMER      ?= openocd
-PROGRAMMERS_SUPPORTED += openocd
-
-FLASHER         ?= openocd
+#FLASHER         ?= openocd #Туточка
 FFLAGS          = -f $(BOARDDIR)/blueprog.cfg \
                   -f $(BOARDDIR)/k1921vg015.cfg \
                   -c 'program $(ELFFILE) verify reset exit'

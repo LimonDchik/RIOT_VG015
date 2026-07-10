@@ -56,7 +56,7 @@ void riscv_irq_init(void)
         write_csr(mtvec, (uintptr_t)&trap_entry | 0x03);
     }
     else {
-        write_csr(mtvec, (uintptr_t)&trap_entry);
+        write_csr(mtvec, (uintptr_t)&trap_entry); //
     }
 
     /* Clear all interrupt enables */

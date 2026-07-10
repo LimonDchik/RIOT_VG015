@@ -23,26 +23,50 @@
 #include "clk.h"
 #include "board.h"
 #include "periph_conf.h"
+#include "periph/timer.h"
 
-static void delay(void)
+
+static void timer_callback(void *arg, int channel)
 {
-    /* Busy-wait ~0.5 s; minimum guard keeps blink visible if coreclk() is low. */
-    uint32_t loops = coreclk() / 8;
-    if (loops < 100000u) {
-        loops = 100000u;
-    }
-    for (volatile uint32_t i = 0; i < loops; i++) { }
+    (void)arg;
+    (void)channel;
+    
+    //puts("Таймер сработал!");
+    LED0_TOGGLE;
+            for(volatile int i = 0; i < 100000; i++){
+                volatile int j = i*2;
+                (void) j;
+            }
 }
+
+//void TMR2_millis_delay(uint16_t millis)  {
+//  uint32_t iter = 0;
+//  while (iter < millis*10) {  
+//    timer_start(TIMER_DEV(0));
+//    while(timer_read(TIMER_DEV(0)) < 608);
+//    timer_stop(TIMER_DEV(0));
+//    timer_clear(TIMER_DEV(0), 1);
+//    iter++;
+//  };
+//}
 
 int main(void)
 {
+    //LED0_TOGGLE;
+    timer_init(TIMER_DEV(0), 1000, timer_callback, NULL);
+    //LED0_TOGGLE;
     while (1) {
 #ifdef LED0_TOGGLE
-        LED0_TOGGLE;
-        delay();
+        //LED0_TOGGLE;
+        //TMR2_millis_delay(10);
+        //delay();
 #else
         puts("Blink! (No LED present or configured...)");
-#endif
+#endif 
+        for(volatile int i = 0; i < 100000; i++){
+            volatile int j = i*2;
+            (void) j;
+        }
     }
 
     return 0;

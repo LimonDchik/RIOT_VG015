@@ -8,8 +8,12 @@ extern "C" {
 #endif
 
 #define TIMER_NUMOF         (1U)
+#define TIMER_0_MAX_VALUE   (0xffffffffUL)
 #ifndef RTC_FREQ
 #define RTC_FREQ            (1000000UL)
+#endif
+#ifndef CLOCK_CORECLOCK
+#define CLOCK_CORECLOCK     RTC_FREQ
 #endif
 /** @} */
 
@@ -18,6 +22,20 @@ static const uart_conf_t uart_config[] = {
 };
 
 #define UART_NUMOF (sizeof(uart_config) / sizeof(uart_config[0]))
+
+/**
+ * @name   Timer configuration
+ * @{
+ */
+static const timer_conf_t timer_config[] = {
+    {
+        .dev      = TMR32,
+        .max      = TIMER_0_MAX_VALUE,
+        .irqn     = IsrVect_IRQ_TMR32
+    }
+};
+
+#define XTIMER_HZ           RTC_FREQ
 
 #ifdef __cplusplus
 }
