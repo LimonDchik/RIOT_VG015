@@ -60,32 +60,23 @@ void riscv_irq_init(void)
     }
 
     /* Clear all interrupt enables */
-    //write_csr(mie, 0);
+    write_csr(mie, 0);
 
     /* Initial PLIC external interrupt controller */
     if (IS_ACTIVE(MODULE_PERIPH_PLIC)) {
-        //plic_init();
+        plic_init();
     }
     if (IS_ACTIVE(MODULE_PERIPH_CLIC)) {
-        //clic_init();
+        clic_init();
     }
 
     /* Enable external interrupts */
-    //set_csr(mie, MIP_MEIP);
+    set_csr(mie, MIP_MEIP);
 
     /*  Set default state of mstatus */
-    //set_csr(mstatus, MSTATUS_DEFAULT);
+    set_csr(mstatus, MSTATUS_DEFAULT);
 
-    //irq_enable();
-
-    //Дальше вставка из официальной SDK на микроконтроллер, не нейро
-    *(volatile uint32_t*)0x0C200000 = 0;
-    // Выключаем прерывание от MTIMER (если MTIMER используется в проекте - закомментировать следующую строку)
-    clear_csr(mie, (1<<7));
-    // Разрешаем внешнее прерывание (PLIC) в machine mode
-    set_csr(mie, (1<<11));
-    // Разрешаем прерывания на глобальном уровне
-    set_csr(mstatus, (1<<3));
+    irq_enable();
 }
 
 /**
