@@ -187,13 +187,8 @@ void heap_stats(void)
 
     /* cppcheck-suppress comparePointers */
     long int heap_size = &_eheap - &_sheap;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     struct mallinfo minfo = mallinfo();
-#pragma GCC diagnostic pop
 
-    /* newlib: mallinfo fields are size_t — use %zu, not %u (avoids -Wformat with -Werror). */
-    printf("heap: %ld (used %zu, free %ld) [bytes]\n",
-           heap_size, minfo.uordblks,
-           (long)(heap_size - (long)minfo.uordblks));
+    printf("heap: %ld (used %u, free %ld) [bytes]\n",
+           heap_size, minfo.uordblks, heap_size - minfo.uordblks);
 }
