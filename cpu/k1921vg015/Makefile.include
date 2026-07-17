@@ -1,9 +1,30 @@
-RAM_START_ADDR ?= 0x20000000
-RAM_LEN ?= 32K
+RAM_START_ADDR ?= 0x40000000
+RAM_LEN ?= 256K
 
-ROM_START_ADDR ?= 0x08000000
-ROM_LEN ?= 128K
+ROM_START_ADDR ?= 0x80000000
+ROM_LEN ?= 1024K
 
 LINKER_SCRIPT ?= riscv.ld
+
+# The host riscv64-unknown-elf package used for this CPU lacks a complete,
+# self-consistent newlib header search path. Reuse the matching C library
+# headers shipped with the vendored toolchain to keep stdint/inttypes/sys/types
+# compatible for rv32imac/ilp32 builds.
+_K1921VG015_NEWLIB_INC := $(RIOTBOARD)/bluebirdVG015/toolchain/riscv-gcc/riscv64-unknown-elf/include
+_K1921VG015_NEWLIB_LIB := $(RIOTBOARD)/bluebirdVG015/toolchain/riscv-gcc/riscv64-unknown-elf/lib/rv32imac/ilp32
+_K1921VG015_NEWLIB_LIB_COMMON := $(RIOTBOARD)/bluebirdVG015/toolchain/riscv-gcc/riscv64-unknown-elf/lib
+ifneq (,$(wildcard $(_K1921VG015_NEWLIB_INC)/reent.h))
+  INCLUDES += -I$(_K1921VG015_NEWLIB_INC)
+endif
+ifneq (,$(wildcard $(_K1921VG015_NEWLIB_LIB)/libc.a))
+  LINKFLAGS += -L$(_K1921VG015_NEWLIB_LIB)
+endif
+ifneq (,$(wildcard $(_K1921VG015_NEWLIB_LIB_COMMON)/libgloss.a))
+  LINKFLAGS += -L$(_K1921VG015_NEWLIB_LIB_COMMON)
+  LINKFLAGS += -lgloss
+endif
+
+CFLAGS += -Wno-error=deprecated-declarations
+CXXFLAGS += -Wno-error=deprecated-declarations
 
 include $(RIOTCPU)/riscv_common/Makefile.include

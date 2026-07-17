@@ -1,8 +1,6 @@
 CPU = k1921vg015
-#CPU_MODEL = k1921vg015_ #ЗАГЛУШКА
+CPU_MODEL = k1921vg015
 
+# Put defined MCU peripherals here (in alphabetical order)
 FEATURES_PROVIDED += periph_timer
 FEATURES_PROVIDED += periph_uart
-
-#include $(RIOTBOARD)/common/k1921vg015/Makefile.features
-#include $(RIOTCPU)/riscv_common/Makefile.features
