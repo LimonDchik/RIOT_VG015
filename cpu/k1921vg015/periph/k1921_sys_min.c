@@ -5,6 +5,8 @@
 
 #include <stdint.h>
 
+#include "K1921VG015.h"
+
 #ifndef HSICLK_VAL
 #define HSICLK_VAL (1000000U)
 #endif
@@ -19,10 +21,29 @@ void SystemCoreClockUpdate(void)
     SystemPll0Clock = 0;
     SystemPll1Clock = 0;
     USBClock = 0;
-    SystemCoreClock = HSICLK_VAL;
+    switch ((RCU->CLKSTAT & RCU_CLKSTAT_SRC_Msk) >>
+            RCU_CLKSTAT_SRC_Pos) {
+        case RCU_CLKSTAT_SRC_HSICLK:
+            SystemCoreClock = HSICLK_VAL;
+            break;
+        case RCU_CLKSTAT_SRC_LSICLK:
+            SystemCoreClock = 32768U;
+            break;
+        default:
+            /* HSE and PLL are not configured by this minimal clock driver. */
+            SystemCoreClock = 0;
+            break;
+    }
 }
 
 void SystemInit(void)
 {
+    /* Do not inherit an unknown clock selected by a bootloader/debugger.  The
+     * minimal clock implementation and all peripheral drivers assume HSI. */
+    RCU->SYSCLKCFG = RCU_SYSCLKCFG_SRC_HSICLK << RCU_SYSCLKCFG_SRC_Pos;
+    while (((RCU->CLKSTAT & RCU_CLKSTAT_SRC_Msk) >>
+            RCU_CLKSTAT_SRC_Pos) != RCU_CLKSTAT_SRC_HSICLK) {
+    }
+
     SystemCoreClockUpdate();
 }

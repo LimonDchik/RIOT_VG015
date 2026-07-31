@@ -11,7 +11,7 @@
  * @{
  *
  * @file
- * @brief       LED brightness control using the RIOT PWM API
+ * @brief       Basic RIOT PWM API test on an LED
  *
  * @}
  */
@@ -24,48 +24,89 @@
 #include "ztimer.h"
 
 /* PWM_DEV(1), channel 0 is TMR1_OUT3 on PA9. */
-#define LED_PWM_DEV            PWM_DEV(1)
-#define LED_PWM_CHANNEL        (0U)
-#define PWM_FREQUENCY          (1000U)
-#define PWM_RESOLUTION         (1000U)
-#define LEVEL_DELAY_MS         (3000U)
-
-/* BlueBird LEDs are connected active-low. Set to 0 for an active-high LED. */
-#define LED_ACTIVE_LOW         (1U)
-
-static const uint8_t brightness_levels[] = { 10, 50, 90, 50 };
-
-static void _set_brightness(uint8_t percent)
-{
-    uint16_t value = ((uint32_t)PWM_RESOLUTION * percent) / 100U;
-
-#if LED_ACTIVE_LOW
-    value = PWM_RESOLUTION - value;
+#ifndef PWM_DEV_NUM
+#define PWM_DEV_NUM             (1U)
 #endif
 
-    pwm_set(LED_PWM_DEV, LED_PWM_CHANNEL, value);
+#ifndef PWM_CHANNEL
+#define PWM_CHANNEL             (0U)
+#endif
+
+#ifndef PWM_MODE
+#define PWM_MODE                PWM_LEFT
+#endif
+
+#ifndef PWM_FREQUENCY
+#define PWM_FREQUENCY     (800U)
+#endif
+
+#ifndef PWM_RESOLUTION
+#define PWM_RESOLUTION    (1250U)
+#endif
+
+#define PWM_DEVICE              PWM_DEV(PWM_DEV_NUM)
+#define LEVEL_DELAY_MS          (5000U)
+
+_Static_assert(PWM_FREQUENCY > 0U, "PWM frequency must not be zero");
+_Static_assert(PWM_RESOLUTION >= 2U, "PWM resolution is too small");
+_Static_assert(PWM_RESOLUTION <= UINT16_MAX, "PWM resolution is too large");
+
+static const uint16_t duty_values[] = {
+    0U,
+    1U,
+    PWM_RESOLUTION / 4U,
+    PWM_RESOLUTION / 2U,
+    (3U * PWM_RESOLUTION) / 4U,
+    PWM_RESOLUTION - 1U,
+    PWM_RESOLUTION,
+};
+
+static const char *_mode_name(pwm_mode_t mode)
+{
+    switch (mode) {
+        case PWM_LEFT:
+            return "left";
+        case PWM_RIGHT:
+            return "right";
+        case PWM_CENTER:
+            return "center";
+        default:
+            return "invalid";
+    }
 }
 
 int main(void)
 {
-    uint32_t actual_frequency = pwm_init(LED_PWM_DEV, PWM_LEFT,
+    uint32_t actual_frequency = pwm_init(PWM_DEVICE, PWM_MODE,
                                          PWM_FREQUENCY, PWM_RESOLUTION);
 
     if (actual_frequency == 0U) {
-        puts("Failed to initialize PWM on PA9");
+        printf("PWM initialization failed: dev=%u mode=%s freq=%" PRIu32
+               " Hz res=%u\n", PWM_DEV_NUM, _mode_name(PWM_MODE),
+               (uint32_t)PWM_FREQUENCY, PWM_RESOLUTION);
         return 1;
     }
 
-    printf("PWM on PA9 initialized at %" PRIu32 " Hz\n", actual_frequency);
+    uint8_t channels = pwm_channels(PWM_DEVICE);
+    if (PWM_CHANNEL >= channels) {
+        printf("Invalid PWM channel %u, device has %u channel(s)\n",
+               PWM_CHANNEL, channels);
+        return 1;
+    }
+
+    printf("PWM initialized: dev=%u channel=%u mode=%s requested=%" PRIu32
+           " Hz actual=%" PRIu32 " Hz resolution=%u\n",
+           PWM_DEV_NUM, PWM_CHANNEL, _mode_name(PWM_MODE),
+           (uint32_t)PWM_FREQUENCY, actual_frequency, PWM_RESOLUTION);
 
     while (1) {
-        for (unsigned i = 0;
-             i < sizeof(brightness_levels) / sizeof(brightness_levels[0]);
+        for (unsigned i = 0; i < sizeof(duty_values) / sizeof(duty_values[0]);
              ++i) {
-            uint8_t brightness = brightness_levels[i];
+            uint16_t value = duty_values[i];
+            uint32_t percent = ((uint32_t)value * 100U) / PWM_RESOLUTION;
 
-            _set_brightness(brightness);
-            printf("LED brightness: %u%%\n", brightness);
+            pwm_set(PWM_DEVICE, PWM_CHANNEL, value);
+            printf("pwm_set(value=%u): %" PRIu32 "%%\n", value, percent);
             ztimer_sleep(ZTIMER_MSEC, LEVEL_DELAY_MS);
         }
     }
