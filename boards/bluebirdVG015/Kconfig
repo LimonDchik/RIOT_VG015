@@ -1,17 +1,17 @@
-# Copyright (c) 2020 HAW Hamburg
+# Copyright (c) 2026
 #
 # This file is subject to the terms and conditions of the GNU Lesser
 # General Public License v2.1. See the file LICENSE in the top level
 # directory for more details.
 
-config BOARD_ARDUINO_UNO
+config BOARD
+    default "bluebirdVG015" if BOARD_BLUEBIRDVG015
+
+config BOARD_BLUEBIRDVG015
     bool
     default y
-    select CPU_MODEL_ATMEGA328P
-    select BOARD_COMMON_ARDUINO_ATMEGA
-    select MODULE_BOARDS_COMMON_ARDUINO-ATMEGA if TEST_KCONFIG
+    select CPU_MODEL_K1921VG015
 
-config BOARD
-    default "arduino-uno" if BOARD_ARDUINO_UNO
-
-source "$(RIOTBOARD)/common/arduino-atmega/Kconfig"
+    # Put defined MCU peripherals here (in alphabetical order)
+    select HAS_PERIPH_TIMER
+    select HAS_PERIPH_UART

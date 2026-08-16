@@ -40,6 +40,4 @@ static void _bsp_led_init(void)
 void board_init(void)
 {
     _bsp_led_init();
-
 }
-
