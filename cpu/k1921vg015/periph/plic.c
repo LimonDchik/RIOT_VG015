@@ -20,13 +20,13 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "cpu_conf.h"
 #include "vendor/plic.h"
 #include "vendor/riscv_csr.h"
 
-#include "assert.h"
 #include "plic.h"
 
 #ifndef _REG32
@@ -36,7 +36,7 @@
 #define PLIC_REG(offset)        _REG32(PLIC_CTRL_ADDR, offset)
 #endif
 
-static plic_isr_cb_t _ext_isrs[PLIC_NUM_INTERRUPTS];
+static plic_isr_cb_t _ext_isrs[PLIC_NUM_INTERRUPTS + 1];
 
 static inline volatile uint32_t *_get_claim_complete_addr(void)
 {
@@ -124,7 +124,13 @@ void plic_isr_handler(void)
 {
     unsigned irq = plic_claim_interrupt();
 
-    _ext_isrs[irq](irq);
+    if (irq == 0) {
+        return;
+    }
+
+    if (_ext_isrs[irq] != NULL) {
+        _ext_isrs[irq](irq);
+    }
 
     plic_complete_interrupt(irq);
 }

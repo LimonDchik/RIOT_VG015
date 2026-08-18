@@ -6,22 +6,36 @@ ROM_LEN ?= 1024K
 
 LINKER_SCRIPT ?= riscv.ld
 
-# The host riscv64-unknown-elf package used for this CPU lacks a complete,
-# self-consistent newlib header search path. Reuse the matching C library
-# headers shipped with the vendored toolchain to keep stdint/inttypes/sys/types
-# compatible for rv32imac/ilp32 builds.
-_K1921VG015_NEWLIB_INC := $(RIOTBOARD)/bluebirdVG015/toolchain/riscv-gcc/riscv64-unknown-elf/include
-_K1921VG015_NEWLIB_LIB := $(RIOTBOARD)/bluebirdVG015/toolchain/riscv-gcc/riscv64-unknown-elf/lib/rv32imac/ilp32
-_K1921VG015_NEWLIB_LIB_COMMON := $(RIOTBOARD)/bluebirdVG015/toolchain/riscv-gcc/riscv64-unknown-elf/lib
-ifneq (,$(wildcard $(_K1921VG015_NEWLIB_INC)/reent.h))
-  INCLUDES += -I$(_K1921VG015_NEWLIB_INC)
+# Optional external vendor toolchain sysroot.
+# Set K1921VG015_TOOLCHAIN_DIR to the root of a full vendor toolchain, e.g.:
+#   export K1921VG015_TOOLCHAIN_DIR=/opt/k1921vg015/riscv-gcc
+#
+# If the variable is not set explicitly, try the conventional per-user install
+# location used during local development. The directory is used only as a source
+# of matching newlib headers and libraries, while the active compiler still
+# comes from the regular RIOT toolchain setup. This keeps toolchain binaries out
+# of the repository and avoids hidden dependencies on checked-in artifacts.
+ifeq (,$(K1921VG015_TOOLCHAIN_DIR))
+  ifneq (,$(wildcard $(HOME)/toolchains/syntacore/sc-dt/riscv-gcc))
+    K1921VG015_TOOLCHAIN_DIR := $(HOME)/toolchains/syntacore/sc-dt/riscv-gcc
+  endif
 endif
-ifneq (,$(wildcard $(_K1921VG015_NEWLIB_LIB)/libc.a))
-  LINKFLAGS += -L$(_K1921VG015_NEWLIB_LIB)
-endif
-ifneq (,$(wildcard $(_K1921VG015_NEWLIB_LIB_COMMON)/libgloss.a))
-  LINKFLAGS += -L$(_K1921VG015_NEWLIB_LIB_COMMON)
-  LINKFLAGS += -lgloss
+
+ifneq (,$(K1921VG015_TOOLCHAIN_DIR))
+  _K1921VG015_TC_INC := $(abspath $(K1921VG015_TOOLCHAIN_DIR))/riscv64-unknown-elf/include
+  _K1921VG015_TC_LIB := $(abspath $(K1921VG015_TOOLCHAIN_DIR))/riscv64-unknown-elf/lib/rv32imac/ilp32
+  _K1921VG015_TC_LIB_COMMON := $(abspath $(K1921VG015_TOOLCHAIN_DIR))/riscv64-unknown-elf/lib
+
+  ifneq (,$(wildcard $(_K1921VG015_TC_INC)/reent.h))
+    INCLUDES += -isystem $(_K1921VG015_TC_INC)
+  endif
+  ifneq (,$(wildcard $(_K1921VG015_TC_LIB)/libc.a))
+    LINKFLAGS += -L$(_K1921VG015_TC_LIB)
+  endif
+  ifneq (,$(wildcard $(_K1921VG015_TC_LIB_COMMON)/libgloss.a))
+    LINKFLAGS += -L$(_K1921VG015_TC_LIB_COMMON)
+    LINKFLAGS += -lgloss
+  endif
 endif
 
 CFLAGS += -Wno-error=deprecated-declarations
