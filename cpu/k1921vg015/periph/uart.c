@@ -28,20 +28,8 @@ static void *_rx_arg[UART_NUMOF];
 
 static unsigned _uart_vector_num(UART_TypeDef *uart)
 {
-    if (uart == UART0) {
-        return IsrVect_IRQ_UART0;
-    }
-    if (uart == UART1) {
-        return IsrVect_IRQ_UART1;
-    }
-    if (uart == UART2) {
-        return IsrVect_IRQ_UART2;
-    }
     if (uart == UART3) {
         return IsrVect_IRQ_UART3;
-    }
-    if (uart == UART4) {
-        return IsrVect_IRQ_UART4;
     }
 
     return 0;
@@ -65,20 +53,6 @@ static void _uart_config_pins(UART_TypeDef *uart)
         RCU->UARTCLKCFG[3].UARTCLKCFG =
             (RCU_UARTCLKCFG_CLKSEL_HSE << RCU_UARTCLKCFG_CLKSEL_Pos) |
             RCU_UARTCLKCFG_CLKEN_Msk | RCU_UARTCLKCFG_RSTDIS_Msk;
-        return;
-    }
-
-    if (uart == UART0) {
-        RCU->CGCFGAPB_bit.UART0EN = 1;
-        RCU->RSTDISAPB_bit.UART0EN = 1;
-
-        GPIOA->ALTFUNCNUM_bit.PIN0 = 1;
-        GPIOA->ALTFUNCNUM_bit.PIN1 = 1;
-        GPIOA->ALTFUNCSET = (1U << 0) | (1U << 1);
-
-        RCU->UARTCLKCFG[0].UARTCLKCFG =
-            (1U << RCU_UARTCLKCFG_CLKSEL_Pos) | RCU_UARTCLKCFG_CLKEN_Msk |
-            RCU_UARTCLKCFG_RSTDIS_Msk;
     }
 }
 
@@ -95,34 +69,25 @@ static void _uart_isr(uart_t dev)
                 UART_ICR_BEIC_Msk | UART_ICR_OEIC_Msk;
 }
 
-static void _uart0_isr(int irq)
+static void _uart_stdio_isr(int irq)
 {
     (void)irq;
     _uart_isr(0);
 }
 
-static uint32_t _uart_clk(UART_TypeDef *uart)
+static uint32_t _uart_clk(void)
 {
-    if (uart == UART3) {
-        return BLUEBIRD_UART_HSECLK;
-    }
-
-    return SystemCoreClock;
+    return BLUEBIRD_UART_HSECLK;
 }
 
-static uint32_t _uart_lcrh(UART_TypeDef *uart)
+static uint32_t _uart_lcrh(void)
 {
-    /* BlueBird's working UART3 test uses 8N1 without FIFO. */
-    if (uart == UART3) {
-        return (3U << UART_LCRH_WLEN_Pos);
-    }
-
-    return UART_LCRH_FEN_Msk | (3U << UART_LCRH_WLEN_Pos);
+    return (3U << UART_LCRH_WLEN_Pos);
 }
 
 static void _uart_hw_init(UART_TypeDef *uart, uint32_t baud)
 {
-    uint32_t clk = _uart_clk(uart);
+    uint32_t clk = _uart_clk();
     uint32_t divisor_x64 = ((clk * 4U) + (baud / 2U)) / baud;
     uint32_t baud_icoef = divisor_x64 / 64U;
     uint32_t baud_fcoef = divisor_x64 - (baud_icoef * 64U);
@@ -132,7 +97,7 @@ static void _uart_hw_init(UART_TypeDef *uart, uint32_t baud)
     uart->CR = 0;
     uart->IBRD = baud_icoef;
     uart->FBRD = baud_fcoef;
-    uart->LCRH = _uart_lcrh(uart);
+    uart->LCRH = _uart_lcrh();
     uart->IFLS = 0;
     uart->ICR = 0x7ffU;
     uart->CR = UART_CR_TXE_Msk | UART_CR_RXE_Msk | UART_CR_UARTEN_Msk;
@@ -156,7 +121,7 @@ int uart_init(uart_t dev, uint32_t baudrate, uart_rx_cb_t rx_cb, void *arg)
         /* Match the vendor example: arm RX IRQ and RX timeout IRQ together. */
         uart_config[dev].dev->ICR = 0x7ffU;
         uart_config[dev].dev->IMSC = UART_IMSC_RXIM_Msk | UART_IMSC_RTIM_Msk;
-        plic_set_isr_cb(_uart_vector_num(uart_config[dev].dev), _uart0_isr);
+        plic_set_isr_cb(_uart_vector_num(uart_config[dev].dev), _uart_stdio_isr);
         plic_set_priority(_uart_vector_num(uart_config[dev].dev), 1);
         plic_enable_interrupt(_uart_vector_num(uart_config[dev].dev));
     }

@@ -20,7 +20,6 @@ extern "C" {
  * @name CLINT / machine timer (mtime / mtimecmp)
  *
  * Same layout as SiFive-style CLINT (`cpu/riscv_common/include/vendor/clint.h`).
- * Matches `RISCV_MTIME_ADDR` / `RISCV_MTIMECMP_ADDR` in `mtimer.h`.
  * @{
  */
 #ifndef CLINT_BASE_ADDR

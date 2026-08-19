@@ -1,0 +1,39 @@
+# Copyright (c) 2026
+#
+# This file is subject to the terms and conditions of the GNU Lesser
+# General Public License v2.1. See the file LICENSE in the top level
+# directory for more details.
+#
+
+config CPU_FAM_K1921VG015
+    bool
+    select CPU_CORE_RV32IMAC
+    select HAS_CPU_K1921VG015
+    select HAS_PERIPH_PM
+    select HAS_PERIPH_PLIC
+    select HAS_PERIPH_TIMER
+    select HAS_PERIPH_TIMER_PERIODIC
+    select HAS_PERIPH_UART
+
+config CPU_MODEL_K1921VG015
+    bool
+    select CPU_FAM_K1921VG015
+
+config HAS_CPU_K1921VG015
+    bool
+    help
+        Indicates that a K1921VG015 CPU is being used.
+
+config CPU_FAM
+    default "k1921vg015" if CPU_FAM_K1921VG015
+
+config CPU_MODEL
+    default "k1921vg015" if CPU_MODEL_K1921VG015
+
+config CPU
+    default "k1921vg015" if CPU_FAM_K1921VG015
+
+config CPU_CORE
+    default "rv32imac" if CPU_CORE_RV32IMAC
+
+source "$(RIOTCPU)/riscv_common/Kconfig"

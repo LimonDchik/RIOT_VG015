@@ -1,35 +1,34 @@
 /*
- * Copyright (C) 2020 Koen Zandberg <koen@bergzand.net>
+ * Copyright (C) 2026
  *
  * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
+ * General Public License v2.1.
  */
 
 /**
- * @ingroup     cpu_riscv_common
+ * @ingroup     cpu_k1921vg015
  * @{
  *
  * @file
- * @brief       Platform-Level interrupt controller driver
+ * @brief       K1921VG015-specific PLIC driver
  *
- * RISCV implementations using this peripheral must define the `PLIC_BASE_ADDR`,
- * in order to use the PLIC as interrupt controller. Also required are:
- * PLIC_NUM_INTERRUPTS and PLIC_NUM_PRIORITIES (future compatibility).
+ * The K1921VG015 core does not expose the RISC-V A-extension. For this CPU we
+ * therefore avoid lock-free atomic builtins when updating PLIC enable bits and
+ * use plain memory-mapped register access instead.
  *
- * @author      Koen Zandberg <koen@bergzand.net>
  * @}
  */
 
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 
+#include "cpu_conf.h"
+#include "vendor/plic.h"
 #include "vendor/riscv_csr.h"
 
-#include "assert.h"
-#include "cpu.h"
 #include "plic.h"
 
-/* Local macros to calculate register offsets */
 #ifndef _REG32
 #define _REG32(p, i)            (*(volatile uint32_t *)((p) + (i)))
 #endif
@@ -37,14 +36,12 @@
 #define PLIC_REG(offset)        _REG32(PLIC_CTRL_ADDR, offset)
 #endif
 
-/* PLIC external ISR function list */
-static plic_isr_cb_t _ext_isrs[PLIC_NUM_INTERRUPTS];
+static plic_isr_cb_t _ext_isrs[PLIC_NUM_INTERRUPTS + 1];
 
 static inline volatile uint32_t *_get_claim_complete_addr(void)
 {
     uint32_t hart_id = read_csr(mhartid);
 
-    /* Construct the claim address */
     return &PLIC_REG(PLIC_CLAIM_OFFSET +
                      (hart_id << PLIC_CLAIM_SHIFT_PER_TARGET));
 }
@@ -53,7 +50,6 @@ static inline volatile uint32_t *_get_threshold_addr(void)
 {
     uint32_t hart_id = read_csr(mhartid);
 
-    /* Construct the claim address */
     return &PLIC_REG(PLIC_THRESHOLD_OFFSET +
                      (hart_id << PLIC_THRESHOLD_SHIFT_PER_TARGET));
 }
@@ -64,21 +60,21 @@ static inline volatile uint32_t *_get_irq_reg(unsigned irq)
 
     return &PLIC_REG(PLIC_ENABLE_OFFSET +
                      (hart_id << PLIC_ENABLE_SHIFT_PER_TARGET)) +
-           (irq >> 5);           /* Intentionally outside the PLIC_REG macro */
+           (irq >> 5);
 }
 
 void plic_enable_interrupt(unsigned irq)
 {
     volatile uint32_t *irq_reg = _get_irq_reg(irq);
 
-    __atomic_fetch_or(irq_reg, 1 << (irq & 0x1f), __ATOMIC_RELAXED);
+    *irq_reg |= (1U << (irq & 0x1f));
 }
 
 void plic_disable_interrupt(unsigned irq)
 {
     volatile uint32_t *irq_reg = _get_irq_reg(irq);
 
-    __atomic_fetch_and(irq_reg, ~(1 << (irq & 0x1f)), __ATOMIC_RELAXED);
+    *irq_reg &= ~(1U << (irq & 0x1f));
 }
 
 void plic_set_threshold(unsigned threshold)
@@ -86,7 +82,6 @@ void plic_set_threshold(unsigned threshold)
     volatile uint32_t *plic_threshold = _get_threshold_addr();
 
     *plic_threshold = threshold;
-
 }
 
 void plic_set_priority(unsigned irq, unsigned priority)
@@ -129,8 +124,13 @@ void plic_isr_handler(void)
 {
     unsigned irq = plic_claim_interrupt();
 
-    /* Don't check here, just crash hard if no handler is available */
-    _ext_isrs[irq](irq);
+    if (irq == 0) {
+        return;
+    }
+
+    if (_ext_isrs[irq] != NULL) {
+        _ext_isrs[irq](irq);
+    }
 
     plic_complete_interrupt(irq);
 }

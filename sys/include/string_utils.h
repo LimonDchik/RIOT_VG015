@@ -28,7 +28,7 @@
  * either `string.h` or `strings.h`, so just include both here */
 #include <string.h>
 #include <strings.h>
-#include <unistd.h>
+#include <sys/types.h>
 
 #include "modules.h"
 

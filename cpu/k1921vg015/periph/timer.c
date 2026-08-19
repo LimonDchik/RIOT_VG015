@@ -6,6 +6,7 @@
  */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "cpu.h"
@@ -20,22 +21,22 @@ void SystemCoreClockUpdate(void);
 /**
  * @brief   Interrupt context for each configured timer
  */
-static timer_isr_ctx_t isr_ctx[TIMER_NUMOF];
+static timer_isr_ctx_t _isr_ctx[TIMER_NUMOF];
 
 /**
  * @brief   Bitmap of one-shot channels
  */
-static uint8_t _oneshot[(TIMER_NUMOF + 1) / 2];
+static uint8_t _oneshot[TIMER_NUMOF];
 
 /**
  * @brief   Bitmap of periodic channels
  */
-static uint8_t _periodic[(TIMER_NUMOF + 1) / 2];
+static uint8_t _periodic[TIMER_NUMOF];
 
 /**
  * @brief   Bitmap of channels that reset the counter on match
  */
-static uint8_t _reset_on_match[(TIMER_NUMOF + 1) / 2];
+static uint8_t _reset_on_match[TIMER_NUMOF];
 
 /**
  * @brief   Stored periodic interval for each timer channel
@@ -45,7 +46,7 @@ static uint32_t _period[TIMER_NUMOF][TIMER_CHANNEL_NUMOF];
 /**
  * @brief   Helper macro to get channel bit in timer/channel bitmap
  */
-#define CHAN_BIT(tim, chan) ((uint8_t)((1U << (chan)) << (TIMER_CHANNEL_NUMOF * ((tim) & 1U))))
+#define CHAN_BIT(chan)      ((uint8_t)(1U << (chan)))
 
 static inline TMR32_TypeDef *dev(tim_t tim)
 {
@@ -59,47 +60,47 @@ static inline volatile uint32_t *chan_reg(tim_t tim, unsigned chan)
 
 static inline void _set_oneshot(tim_t tim, unsigned chan)
 {
-    _oneshot[tim >> 1] |= CHAN_BIT(tim, chan);
+    _oneshot[tim] |= CHAN_BIT(chan);
 }
 
 static inline void _clear_oneshot(tim_t tim, unsigned chan)
 {
-    _oneshot[tim >> 1] &= (uint8_t)~CHAN_BIT(tim, chan);
+    _oneshot[tim] &= (uint8_t)~CHAN_BIT(chan);
 }
 
 static inline bool _is_oneshot(tim_t tim, unsigned chan)
 {
-    return (_oneshot[tim >> 1] & CHAN_BIT(tim, chan)) != 0;
+    return (_oneshot[tim] & CHAN_BIT(chan)) != 0;
 }
 
 static inline void _set_periodic(tim_t tim, unsigned chan)
 {
-    _periodic[tim >> 1] |= CHAN_BIT(tim, chan);
+    _periodic[tim] |= CHAN_BIT(chan);
 }
 
 static inline void _clear_periodic(tim_t tim, unsigned chan)
 {
-    _periodic[tim >> 1] &= (uint8_t)~CHAN_BIT(tim, chan);
+    _periodic[tim] &= (uint8_t)~CHAN_BIT(chan);
 }
 
 static inline bool _is_periodic(tim_t tim, unsigned chan)
 {
-    return (_periodic[tim >> 1] & CHAN_BIT(tim, chan)) != 0;
+    return (_periodic[tim] & CHAN_BIT(chan)) != 0;
 }
 
 static inline void _set_reset_on_match(tim_t tim, unsigned chan)
 {
-    _reset_on_match[tim >> 1] |= CHAN_BIT(tim, chan);
+    _reset_on_match[tim] |= CHAN_BIT(chan);
 }
 
 static inline void _clear_reset_on_match(tim_t tim, unsigned chan)
 {
-    _reset_on_match[tim >> 1] &= (uint8_t)~CHAN_BIT(tim, chan);
+    _reset_on_match[tim] &= (uint8_t)~CHAN_BIT(chan);
 }
 
 static inline bool _is_reset_on_match(tim_t tim, unsigned chan)
 {
-    return (_reset_on_match[tim >> 1] & CHAN_BIT(tim, chan)) != 0;
+    return (_reset_on_match[tim] & CHAN_BIT(chan)) != 0;
 }
 
 static inline uint32_t _channel_im_mask(unsigned chan)
@@ -117,7 +118,24 @@ static inline uint32_t _channel_ic_mask(unsigned chan)
     return (uint32_t)(TMR32_IC_CAP0_Msk << chan);
 }
 
-static int _pick_divider(uint32_t freq, uint32_t *div_sel, uint32_t *ticks_per_sec)
+static inline bool _channel_invalid(tim_t tim, int channel)
+{
+    return (tim >= TIMER_NUMOF) || ((unsigned)channel >= TIMER_CHANNEL_NUMOF);
+}
+
+static void _prepare_oneshot_channel(tim_t tim, unsigned chan, uint32_t value)
+{
+    _set_oneshot(tim, chan);
+    _clear_periodic(tim, chan);
+    _clear_reset_on_match(tim, chan);
+    _period[tim][chan] = 0;
+
+    dev(tim)->IC = _channel_ic_mask(chan);
+    *chan_reg(tim, chan) = value;
+    dev(tim)->IM |= _channel_im_mask(chan);
+}
+
+static int _pick_divider(uint32_t freq, uint32_t *div_sel)
 {
     SystemCoreClockUpdate();
 
@@ -127,22 +145,18 @@ static int _pick_divider(uint32_t freq, uint32_t *div_sel, uint32_t *ticks_per_s
 
     if (SystemCoreClock == freq) {
         *div_sel = TMR32_CTRL_DIV_Div1;
-        *ticks_per_sec = SystemCoreClock;
         return 0;
     }
     if ((SystemCoreClock / 2U) == freq && ((SystemCoreClock % 2U) == 0U)) {
         *div_sel = TMR32_CTRL_DIV_Div2;
-        *ticks_per_sec = SystemCoreClock / 2U;
         return 0;
     }
     if ((SystemCoreClock / 4U) == freq && ((SystemCoreClock % 4U) == 0U)) {
         *div_sel = TMR32_CTRL_DIV_Div4;
-        *ticks_per_sec = SystemCoreClock / 4U;
         return 0;
     }
     if ((SystemCoreClock / 8U) == freq && ((SystemCoreClock % 8U) == 0U)) {
         *div_sel = TMR32_CTRL_DIV_Div8;
-        *ticks_per_sec = SystemCoreClock / 8U;
         return 0;
     }
 
@@ -189,8 +203,8 @@ static void _timer_isr(int irq)
             timer->IM &= ~_channel_im_mask(chan);
         }
 
-        if (isr_ctx[tim].cb != NULL) {
-            isr_ctx[tim].cb(isr_ctx[tim].arg, (int)chan);
+        if (_isr_ctx[tim].cb != NULL) {
+            _isr_ctx[tim].cb(_isr_ctx[tim].arg, (int)chan);
         }
     }
 }
@@ -198,24 +212,20 @@ static void _timer_isr(int irq)
 int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
 {
     uint32_t div_sel;
-    uint32_t ticks_per_sec;
-
     if (tim >= TIMER_NUMOF) {
         return -1;
     }
 
-    if (_pick_divider(freq, &div_sel, &ticks_per_sec) != 0) {
+    if (_pick_divider(freq, &div_sel) != 0) {
         return -1;
     }
 
-    (void)ticks_per_sec;
+    _isr_ctx[tim].cb = cb;
+    _isr_ctx[tim].arg = arg;
 
-    isr_ctx[tim].cb = cb;
-    isr_ctx[tim].arg = arg;
-
-    _oneshot[tim >> 1] = 0;
-    _periodic[tim >> 1] = 0;
-    _reset_on_match[tim >> 1] = 0;
+    _oneshot[tim] = 0;
+    _periodic[tim] = 0;
+    _reset_on_match[tim] = 0;
     for (unsigned chan = 0; chan < TIMER_CHANNEL_NUMOF; chan++) {
         _period[tim][chan] = 0;
     }
@@ -248,20 +258,13 @@ int timer_init(tim_t tim, uint32_t freq, timer_cb_t cb, void *arg)
 
 int timer_set_absolute(tim_t tim, int channel, unsigned int value)
 {
-    if ((tim >= TIMER_NUMOF) || ((unsigned)channel >= TIMER_CHANNEL_NUMOF)) {
+    if (_channel_invalid(tim, channel)) {
         return -1;
     }
 
     unsigned irqstate = irq_disable();
 
-    _set_oneshot(tim, (unsigned)channel);
-    _clear_periodic(tim, (unsigned)channel);
-    _clear_reset_on_match(tim, (unsigned)channel);
-    _period[tim][channel] = 0;
-
-    dev(tim)->IC = _channel_ic_mask((unsigned)channel);
-    *chan_reg(tim, (unsigned)channel) = value;
-    dev(tim)->IM |= _channel_im_mask((unsigned)channel);
+    _prepare_oneshot_channel(tim, (unsigned)channel, value);
 
     irq_restore(irqstate);
     return 0;
@@ -274,7 +277,7 @@ int timer_set(tim_t tim, int channel, unsigned int timeout)
     uint32_t delta;
     unsigned irqstate;
 
-    if ((tim >= TIMER_NUMOF) || ((unsigned)channel >= TIMER_CHANNEL_NUMOF)) {
+    if (_channel_invalid(tim, channel)) {
         return -1;
     }
 
@@ -283,14 +286,7 @@ int timer_set(tim_t tim, int channel, unsigned int timeout)
     now = dev(tim)->COUNT;
     value = now + timeout;
 
-    _set_oneshot(tim, (unsigned)channel);
-    _clear_periodic(tim, (unsigned)channel);
-    _clear_reset_on_match(tim, (unsigned)channel);
-    _period[tim][channel] = 0;
-
-    dev(tim)->IC = _channel_ic_mask((unsigned)channel);
-    *chan_reg(tim, (unsigned)channel) = value;
-    dev(tim)->IM |= _channel_im_mask((unsigned)channel);
+    _prepare_oneshot_channel(tim, (unsigned)channel, value);
 
     delta = (*chan_reg(tim, (unsigned)channel) - dev(tim)->COUNT);
     if (delta > timeout) {
@@ -309,7 +305,7 @@ int timer_set_periodic(tim_t tim, int channel, unsigned int value, uint8_t flags
     unsigned irqstate;
     int reset_chan;
 
-    if ((tim >= TIMER_NUMOF) || ((unsigned)channel >= TIMER_CHANNEL_NUMOF)) {
+    if (_channel_invalid(tim, channel)) {
         return -1;
     }
 
@@ -358,7 +354,7 @@ int timer_clear(tim_t tim, int channel)
 {
     unsigned irqstate;
 
-    if ((tim >= TIMER_NUMOF) || ((unsigned)channel >= TIMER_CHANNEL_NUMOF)) {
+    if (_channel_invalid(tim, channel)) {
         return -1;
     }
 

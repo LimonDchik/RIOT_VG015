@@ -56,7 +56,7 @@ void riscv_irq_init(void)
         write_csr(mtvec, (uintptr_t)&trap_entry | 0x03);
     }
     else {
-        write_csr(mtvec, (uintptr_t)&trap_entry); //
+        write_csr(mtvec, (uintptr_t)&trap_entry);
     }
 
     /* Clear all interrupt enables */
@@ -136,7 +136,7 @@ static void handle_trap(uint32_t mcause)
         default:
 #ifdef DEVELHELP
             printf("Unhandled trap:\n");
-            printf("  mcause: 0x%lx\n", (unsigned long)trap);
+            printf("  mcause: 0x%" PRIx32 "\n", trap);
             printf("  mepc:   0x%lx\n", read_csr(mepc));
             printf("  mtval:  0x%lx\n", read_csr(mtval));
 #endif
