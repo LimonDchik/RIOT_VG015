@@ -43,6 +43,43 @@ static const timer_conf_t timer_config[] = {
 #define XTIMER_HZ           RTC_FREQ
 /** @} */
 
+/**
+ * @name   PWM configuration
+ *
+ * TMR0 CAPCOM0 defines the PWM period.  The three remaining compare channels
+ * are routed to TMR0_OUT1..3 on PC7..PC9 using alternate function 2.
+ * @{
+ */
+static const pwm_chan_conf_t pwm0_channels[] = {
+    { .port = GPIOC, .pin = 7, .channel = 1, .af = 2 },
+    { .port = GPIOC, .pin = 8, .channel = 2, .af = 2 },
+    { .port = GPIOC, .pin = 9, .channel = 3, .af = 2 },
+};
+
+static const pwm_chan_conf_t pwm1_channels[] = {
+    { .port = GPIOA, .pin = 9, .channel = 3, .af = 2 },
+};
+
+static const pwm_conf_t pwm_config[] = {
+    {
+        .dev = TMR0,
+        .channels = pwm0_channels,
+        .channel_numof = sizeof(pwm0_channels) / sizeof(pwm0_channels[0]),
+        .clock_mask = RCU_CGCFGAPB_TMR0EN_Msk,
+        .reset_mask = RCU_RSTDISAPB_TMR0EN_Msk,
+    },
+    {
+        .dev = TMR1,
+        .channels = pwm1_channels,
+        .channel_numof = sizeof(pwm1_channels) / sizeof(pwm1_channels[0]),
+        .clock_mask = RCU_CGCFGAPB_TMR1EN_Msk,
+        .reset_mask = RCU_RSTDISAPB_TMR1EN_Msk,
+    },
+};
+
+#define PWM_NUMOF           (sizeof(pwm_config) / sizeof(pwm_config[0]))
+/** @} */
+
 #ifdef __cplusplus
 }
 #endif

@@ -2,6 +2,7 @@ CPU_CORE := rv32imac
 
 FEATURES_PROVIDED += periph_plic
 FEATURES_PROVIDED += periph_pm
+FEATURES_PROVIDED += periph_pwm
 FEATURES_PROVIDED += periph_timer
 FEATURES_PROVIDED += periph_timer_periodic
 

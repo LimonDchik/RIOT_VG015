@@ -36,9 +36,32 @@ typedef struct {
     uint8_t irqn;           /**< global IRQ channel */
 } timer_conf_t;
 
+/**
+ * @brief   PWM channel configuration
+ *
+ * CAPCOM channel 0 is used as the timer period register.  Consequently a
+ * PWM device can expose at most CAPCOM channels 1 through 3.
+ */
+typedef struct {
+    GPIO_TypeDef *port;
+    uint8_t pin;  
+    uint8_t channel;
+    uint8_t af;
+} pwm_chan_conf_t;
+
+/**
+ * @brief   PWM device configuration
+ */
+typedef struct {
+    TMR_TypeDef *dev;
+    const pwm_chan_conf_t *channels;
+    uint8_t channel_numof;
+    uint32_t clock_mask;
+    uint32_t reset_mask;
+} pwm_conf_t;
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* PERIPH_CPU_H */
-
