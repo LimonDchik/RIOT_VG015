@@ -15,11 +15,11 @@ extern "C" {
 #define TIMER_0_MAX_VALUE   (0xffffffffUL)
 
 #ifndef RTC_FREQ
-#define RTC_FREQ            (1000000UL)
+#define RTC_FREQ            (6250000UL)
 #endif
 
 #ifndef CLOCK_CORECLOCK
-#define CLOCK_CORECLOCK     RTC_FREQ
+#define CLOCK_CORECLOCK     (50000000UL)
 #endif
 
 /**
