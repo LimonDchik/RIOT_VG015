@@ -259,6 +259,31 @@ TEMPLATE_ATOMIC_OP_FETCH_N(nand, &, 8, ~) /* __atomic_nand_fetch_8 */
 
 /* end{code-style-ignore} */
 
+bool atomic_test_and_set_fallback(void *ptr, int memorder)
+    __asm__("__atomic_test_and_set");
+void atomic_clear_fallback(bool *ptr, int memorder)
+    __asm__("__atomic_clear");
+
+bool atomic_test_and_set_fallback(void *ptr, int memorder)
+{
+    (void)memorder;
+    unsigned int mask = irq_disable();
+    bool old = *(volatile uint8_t *)ptr;
+
+    *(volatile uint8_t *)ptr = true;
+    irq_restore(mask);
+    return old;
+}
+
+void atomic_clear_fallback(bool *ptr, int memorder)
+{
+    (void)memorder;
+    unsigned int mask = irq_disable();
+
+    *(volatile bool *)ptr = false;
+    irq_restore(mask);
+}
+
 /* ***** Generic versions below ***** */
 
 /* Clang objects if you redefine a builtin.  This little hack allows us to
