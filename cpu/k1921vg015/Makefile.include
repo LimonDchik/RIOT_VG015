@@ -23,7 +23,7 @@ endif
 
 ifneq (,$(K1921VG015_TOOLCHAIN_DIR))
   _K1921VG015_TC_INC := $(abspath $(K1921VG015_TOOLCHAIN_DIR))/riscv64-unknown-elf/include
-  _K1921VG015_TC_LIB := $(abspath $(K1921VG015_TOOLCHAIN_DIR))/riscv64-unknown-elf/lib/rv32imac/ilp32
+  _K1921VG015_TC_LIB := $(abspath $(K1921VG015_TOOLCHAIN_DIR))/riscv64-unknown-elf/lib/$(CPU_CORE)/ilp32
   _K1921VG015_TC_LIB_COMMON := $(abspath $(K1921VG015_TOOLCHAIN_DIR))/riscv64-unknown-elf/lib
 
   ifneq (,$(wildcard $(_K1921VG015_TC_INC)/reent.h))

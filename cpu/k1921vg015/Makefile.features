@@ -1,4 +1,4 @@
-CPU_CORE := rv32imac
+CPU_CORE := rv32imc
 
 FEATURES_PROVIDED += periph_plic
 FEATURES_PROVIDED += periph_pm

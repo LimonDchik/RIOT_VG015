@@ -44,12 +44,12 @@ ifeq (,$(TARGET_ARCH))
 endif
 
 ifeq ($(TOOLCHAIN),gnu)
-  GCC_DEFAULTS_TO_NEW_RISCV_ISA ?= $(shell echo "typedef int dont_be_pedantic;" | $(TARGET_ARCH)-gcc -march=rv32imac -mabi=ilp32 -misa-spec=2.2 -E - > /dev/null 2>&1 && echo 1 || echo 0)
+  GCC_DEFAULTS_TO_NEW_RISCV_ISA ?= $(shell echo "typedef int dont_be_pedantic;" | $(TARGET_ARCH)-gcc -march=$(CPU_CORE) -mabi=ilp32 -misa-spec=2.2 -E - > /dev/null 2>&1 && echo 1 || echo 0)
 endif
 
 GCC_DEFAULTS_TO_NEW_RISCV_ISA ?= 0
 
-CFLAGS_CPU := -march=rv32imac -mabi=ilp32
+CFLAGS_CPU := -march=$(CPU_CORE) -mabi=ilp32
 
 # Since RISC-V ISA specifications 20191213 instructions previously included in
 # rv32imac have been moved to the ZICSR extension. See
@@ -91,4 +91,4 @@ ASFLAGS += $(CFLAGS_CPU) $(CFLAGS_DBG)
 LINKFLAGS += $(CFLAGS_CPU) $(CFLAGS_LINK) $(CFLAGS_DBG) $(CFLAGS_OPT) -nostartfiles -Wl,--gc-sections -static -lgcc
 
 # Platform triple as used by Rust
-RUST_TARGET = riscv32imac-unknown-none-elf
+RUST_TARGET = riscv$(patsubst rv%,%,$(CPU_CORE))-unknown-none-elf

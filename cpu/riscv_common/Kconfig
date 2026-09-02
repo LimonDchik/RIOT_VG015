@@ -24,6 +24,11 @@ config CPU_CORE_RV32IMAC
     select CPU_ARCH_RISCV
     select HAS_ARCH_32BIT
 
+config CPU_CORE_RV32IMC
+    bool
+    select CPU_ARCH_RISCV
+    select HAS_ARCH_32BIT
+
 ## Definition of specific features
 config HAS_ARCH_RISCV
     bool
@@ -31,7 +36,7 @@ config HAS_ARCH_RISCV
         Indicates that the current CPU has a RISC-V.
 
 config CPU_ARCH
-    default "rv32" if CPU_CORE_RV32IMAC
+    default "rv32" if CPU_CORE_RV32IMAC || CPU_CORE_RV32IMC
 
 config MODULE_RISCV_COMMON
     bool
